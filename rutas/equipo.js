@@ -1,0 +1,110 @@
+const express = require('express');
+const Usuario = require('../models/usuario');
+const { isAdmin } = require('./validate-token');
+
+const Equipo = require(__dirname + '/../models/equipo');
+const Convocatoria = require(__dirname + '/../models/convocatoria');
+const validates = require('./validate-token');
+let router = express.Router();
+
+router.use(express.json());
+
+//VER EQUIPOS CON SUS USUARIOS
+router.get('/', validates.protegerRuta(''), (req, res) => {
+
+    Equipo.find().populate('miembros').then(x => {
+        if (x.length > 0) {
+            res.send({ ok: true, resultado: x });
+        } else {
+            res.status(500).send({ ok: false, error: "No se encontro el equipo" })
+        }
+    }).catch(err => {
+        res.status(500).send({
+            ok: false,
+            error: err
+        });
+    });
+
+});
+
+//VER UN EQUIPO CON SUS USUARIOS
+
+
+//AÑADIR UN EQUIPO
+router.post('/', validates.protegerRuta('admin'), (req, res) => {
+    let newEquipo = new Equipo({
+        nombre: req.body.nombre
+    });
+
+    newEquipo.save().then(x => {
+        res.status(200).send({
+            ok: true,
+            resultado: x
+        })
+    }).catch(err => {
+        res.status(400).send({
+            ok: false,
+            error: "Error insertando el Convocatoria: " + err
+        });
+    });
+});
+
+///AÑADIR Usuario A EQUIPO
+router.post('/:idEquipo/:idUsuario', validates.protegerRuta('entrenador'), (req, res) => {
+    Equipo.findByIdAndUpdate(req.params['idEquipo'], {
+        $push: {
+            'miembros': { '_id': req.params['idUsuario'] }
+        }
+    }, {
+        new: true
+    }).then(x => {
+        if (x) {
+            res.status(200).send({
+                ok: true,
+                resultado: x
+            })
+        } else {
+            res.status(401).send({
+                ok: false,
+                error: 'Error al inserar este Usuario en el Equipo'
+            })
+        }
+    }).catch(err => {
+        res.status(401).send({
+            ok: false,
+            error: 'Error al inserar este Usuario en el Equipo' + err
+        })
+    })
+
+})
+
+
+///BORRAR USUARIO DE EQUIPO
+router.delete('/:idEquipo/:idUsuario', validates.protegerRuta('entrenador'), (req, res) => {
+    Equipo.findByIdAndUpdate(req.params['idEquipo'], {
+        $pull: {
+            'miembros': req.params['idUsuario']
+        }
+    }, {
+        new: true
+    }).then(x => {
+        if (x) {
+            res.status(200).send({
+                ok: true,
+                resultado: x
+            })
+        } else {
+            res.status(401).send({
+                ok: false,
+                error: 'Error al inserar este Usuario en el Equipo'
+            })
+        }
+    }).catch(err => {
+        res.status(401).send({
+            ok: false,
+            error: 'Error al inserar este Usuario en el Equipo' + err
+        })
+    })
+})
+
+module.exports = router;
