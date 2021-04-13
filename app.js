@@ -18,7 +18,7 @@ const app = express();
 
 
 // Conexión con la BD
-mongoose.connect('mongodb://mongodb+srv://David:<Ernano21>@cluster0.pysxt.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
+mongoose.connect('mongodb://mongodb+srv://David:<Ernano21>@cluster0.pysxt.mongodb.net/test', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 
@@ -46,4 +46,6 @@ app.use('/calendario', calendario)
 
 
 // Puesta en marcha del servidor
-app.listen(app.get('port'));
+app.listen(app.get('port'), () =>
+    console.log('Servidor en marcha')
+);
