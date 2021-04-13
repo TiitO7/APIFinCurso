@@ -24,6 +24,8 @@ mongoose.connect('mongodb://localhost:27017/ManagerClub', {
 
 });
 
+app.set('port', process.env.PORT || 3000);
+
 mongoose.set('useFindAndModify', false);
 // Carga de middleware y enrutadores
 app.use(express.json());
@@ -44,4 +46,4 @@ app.use('/calendario', calendario)
 
 
 // Puesta en marcha del servidor
-app.listen(3000);
+app.listen(app.get('port'));
