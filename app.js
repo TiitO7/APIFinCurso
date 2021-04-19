@@ -18,7 +18,7 @@ const app = express();
 
 
 // Conexión con la BD
-mongoose.connect('mongodb://mongodb+srv://David:<Ernano21>@cluster0.pysxt.mongodb.net/test', {
+mongoose.connect('mongodb://localhost:27017/ManagerClub', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 
