@@ -10,7 +10,7 @@ let router = express.Router();
 router.use(express.json());
 
 //VER EQUIPOS CON SUS USUARIOS
-router.get('/', validates.protegerRuta(''), (req, res) => {
+router.get('/', (req, res) => {
 
     Equipo.find().populate('miembros').then(x => {
         if (x.length > 0) {
@@ -24,6 +24,30 @@ router.get('/', validates.protegerRuta(''), (req, res) => {
             error: err
         });
     });
+
+});
+
+//Buscar EQUIPO POR ID
+router.get('/:id', (req, res) => {
+
+    Equipo.findById(req.params['id']).populate('miembros')
+        .then(resultado => {
+            if (resultado) {
+                res.status(200)
+                    .send({ ok: true, equipo: resultado });
+            } else {
+                res.status(400).send({
+                    ok: false,
+                    error: "Equipo no encontrado"
+                });
+            }
+
+        }).catch(err => {
+            res.status(500).send({
+                ok: false,
+                error: err
+            });
+        });
 
 });
 
@@ -50,7 +74,7 @@ router.post('/', validates.protegerRuta('admin'), (req, res) => {
 });
 
 ///AÑADIR Usuario A EQUIPO
-router.post('/:idEquipo/:idUsuario', validates.protegerRuta('entrenador'), (req, res) => {
+router.post('/:idEquipo/:idUsuario', (req, res) => {
     Equipo.findByIdAndUpdate(req.params['idEquipo'], {
         $push: {
             'miembros': { '_id': req.params['idUsuario'] }

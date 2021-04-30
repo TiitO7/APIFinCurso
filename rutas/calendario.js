@@ -12,14 +12,14 @@ var FileReader = require('filereader'),
     fileReader = new FileReader();
 const multer = require('multer');
 const { base } = require('../models/usuario');
-
+const basicAuth = require('../utils/basicAuth');
 router.use(express.json());
 
 router.get('/', (req, res) => {
 
     Calendario.find().populate('convocatorias').then(x => {
         if (x.length > 0) {
-            res.send({ ok: true, resultado: x });
+            res.send({ ok: true, calendarios: x });
         } else {
             res.status(500).send({ ok: false, error: "No se encontro el equipo" })
         }
@@ -30,7 +30,6 @@ router.get('/', (req, res) => {
         });
     });
 
-
 });
 //VER CALENDARIO
 router.get('/:id', (req, res) => {
@@ -38,7 +37,7 @@ router.get('/:id', (req, res) => {
         .then(resultado => {
             if (resultado) {
                 res.status(200)
-                    .send({ ok: true, resultado: resultado });
+                    .send({ ok: true, calendario: resultado });
             } else {
                 res.status(400).send({
                     ok: false,

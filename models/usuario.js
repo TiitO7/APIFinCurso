@@ -13,6 +13,7 @@ const UsuarioSchema = new mongoose.Schema({
         lowercase: true
     },
     avatar: String,
+    token: String,
     role: {
         type: String,
         default: 'jugador',

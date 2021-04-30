@@ -3,7 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const nunjucks = require('nunjucks');
-const session = require('express-session');
 const methodOverride = require('method-override');
 const jwt = require('jsonwebtoken');
 //Enrutadores
@@ -11,9 +10,15 @@ const convocatorias = require(__dirname + '/rutas/convocatorias');
 const usuarios = require(__dirname + '/rutas/auth');
 const equipos = require(__dirname + '/rutas/equipo');
 const calendario = require(__dirname + '/rutas/calendario');
+const session = require('express-session');
+
+const cors = require('cors');
 let TOKEN_SECRET = 'secreto';
 const app = express();
 
+
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb' }));
 
 
 
@@ -37,15 +42,16 @@ app.use(methodOverride(function(req, res) {
     }
 }));
 
-app.use(express.static(__dirname + '/public/uploads'));
-app.get('/', convocatorias)
-app.use('/convocatorias', convocatorias)
-app.use('/auth', usuarios)
-app.use('/equipos', equipos)
-app.use('/calendario', calendario)
+app.use('/public', express.static(__dirname + '/public'));
+app.get('/', cors(), convocatorias)
+app.use('/convocatorias', cors(), convocatorias)
+app.use('/auth', cors(), usuarios)
+app.use('/equipos', cors(), equipos)
+app.use('/calendario', cors(), calendario)
 
 
+app.use(cors());
 // Puesta en marcha del servidor
 app.listen(app.get('port'), () =>
-    console.log('Servidor en marcha')
+    console.log('Servidor en marcha...')
 );

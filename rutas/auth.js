@@ -12,13 +12,12 @@ const Joi = require('@hapi/joi');
 const Equipo = require('../models/equipo');
 let TOKEN_SECRET = 'secreto';
 router.use(express.json());
-
+const cors = require('cors');
+const { string } = require('@hapi/joi');
 //-- REGISTRO --
 router.post('/registro', async(req, res) => {
 
     const password = await codifyPassword(req.body.password);
-
-
 
     if (req.body.avatar != '') {
         let avatar = req.body.avatar;
@@ -35,7 +34,7 @@ router.post('/registro', async(req, res) => {
         });
 
         fs.writeFile('public/uploads/avatar/' + rutaImagen, base64Image, { encoding: 'base64' }, (error) => {
-            newUser.avatar = 'public/uploads/avatar/' + rutaImagen;
+            newUser.avatar = rutaImagen;
             newUser.save().then(x => {
 
                 console.log(newUser.avatar);
@@ -79,9 +78,9 @@ async function codifyPassword(passwordBody) {
 }
 
 //-- lOGIN// Método para generar el token tras login correcto
-let generarToken = (login, role) => {
-    console.log(role);
-    return jwt.sign({ login: login, role: role },
+let generarToken = (login, id, role) => {
+
+    return jwt.sign({ login: login, id: id, role: role },
         TOKEN_SECRET, { expiresIn: 86400 });
 };
 
@@ -90,26 +89,108 @@ let generarToken = (login, role) => {
 router.post('/login', async(req, res) => {
     // login/*
     const usuario = await Usuario.findOne({ email: req.body.email });
-    if (!usuario) return res.status(400).json({ error: 'Usuario no encontrado' });
-    console.log(usuario);
+
     const passValida = await bcrypt.compare(req.body.password, usuario.password);
     if (!passValida) return res.status(400).json({ error: 'contraseña no válida' })
 
     if (usuario && passValida) {
-        res.send({ ok: true, token: generarToken(usuario.email, usuario.role) });
+        res.send({ ok: true, token: generarToken(usuario.email, usuario.id, usuario.role) });
     } else {
         res.send({ ok: false });
     }
 
-
 })
+
+router.get('/me', validates.protegerRuta(''), (req, res) => {
+    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/avatar/';
+    console.log(BaseUrl);
+    let token = req.headers['authorization'];
+    token = token.substring(7);
+    console.log(token);
+    let decode = jwt.decode(token, TOKEN_SECRET);
+    console.log(decode);
+
+    Usuario.findById(decode.id)
+        .then(resultado => {
+            if (resultado) {
+                resultado.avatar = BaseUrl + resultado.avatar;
+                res.status(200)
+                    .send({ ok: true, usuario: resultado, email: resultado.email });
+            } else {
+                res.status(400).send({
+                    ok: false,
+                    error: "Usuario no encontrado"
+                });
+            }
+
+        }).catch(err => {
+            console.log('ha fallado /me');
+            res.status(500).send({
+                ok: false,
+                error: err
+            });
+        });
+
+});
+
+//VER UN USUARIO
+router.get('/:id', validates.protegerRuta(''), (req, res) => {
+    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/avatar/';
+    console.log(BaseUrl);
+    Usuario.findById(req.params['id'])
+        .then(resultado => {
+            if (resultado) {
+                resultado.avatar = BaseUrl + resultado.avatar;
+                res.status(200)
+                    .send({ ok: true, usuario: resultado });
+            } else {
+                res.status(400).send({
+                    ok: false,
+                    error: "Usuario no encontrado"
+                });
+            }
+
+        }).catch(err => {
+            res.status(500).send({
+                ok: false,
+                error: err
+            });
+        });
+});
+// VER USUARIO DE UN EQUIPO
+router.get('/equipo/:idEquipo', (req, res) => {
+    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/avatar/';
+    console.log(BaseUrl);
+    Usuario.find({ equipo: req.params['idEquipo'] }).then(x => {
+        if (x.length > 0) {
+            x.forEach(el => {
+                el.avatar = BaseUrl + el.avatar;
+
+            });
+            res.send({ ok: true, usuarios: x });
+        } else {
+            res.status(500).send({ ok: false, error: "No se encontro el equipo" })
+        }
+    }).catch(err => {
+        res.status(500).send({
+            ok: false,
+            error: err
+        });
+    });
+
+
+});
 
 // VER USUARIOS
 router.get('/', (req, res) => {
-
+    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/avatar/';
+    console.log(BaseUrl);
     Usuario.find().populate('equipo').then(x => {
         if (x.length > 0) {
-            res.send({ ok: true, resultado: x });
+            x.forEach(el => {
+                el.avatar = BaseUrl + el.avatar;
+            });
+            res.send({ ok: true, usuarios: x });
         } else {
             res.status(500).send({ ok: false, error: "No se encontro el equipo" })
         }
@@ -174,7 +255,7 @@ router.post('/edit-avatar/:id', validates.protegerRuta(''), (req, res) => {
         let base64Image = avatar.split(';base64,').pop();
         let rutaImagen = 'avatar' + Date.now() + '.jpeg';
         fs.writeFile('public/uploads/avatar/' + rutaImagen, base64Image, { encoding: 'base64' }, (error) => {
-            Usuario.findByIdAndUpdate(id, { $set: { avatar: 'public/uploads/avatar/' + rutaImagen } }, { new: true }, (err, userBD) => {
+            Usuario.findByIdAndUpdate(id, { $set: { avatar: rutaImagen } }, { new: true }, (err, userBD) => {
                 if (err) {
                     return res.status(400).json({
                         ok: false,
