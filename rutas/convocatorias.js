@@ -101,8 +101,14 @@ router.get('/equipo/:idEquipo', validates.protegerRuta(''), (req, res) => {
 
 router.get('/equipo/:idEquipo/partidos', validates.protegerRuta(''), (req, res) => {
     let resultado = [];
-    Convocatoria.find({ equipo: req.params['idEquipo'], itpo: 'partido' }).then(x => {
+    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/';
+    console.log(BaseUrl);
+    Convocatoria.find({ equipo: req.params['idEquipo'], tipo: 'partido' }).then(x => {
         if (x.length > 0) {
+            x.forEach(el => {
+                el.imagen = BaseUrl + el.imagen;
+
+            });
             res.send({ ok: true, resultado: x });
         } else {
             res.status(500).send({ ok: false, error: "No se encontraron partidos" })
@@ -119,8 +125,14 @@ router.get('/equipo/:idEquipo/partidos', validates.protegerRuta(''), (req, res) 
 
 router.get('/equipo/:idEquipo/entrenamientos', validates.protegerRuta(''), (req, res) => {
     let resultado = [];
+    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/';
+    console.log(BaseUrl);
     Convocatoria.find({ equipo: req.params['idEquipo'], tipo: 'entrenamiento' }).then(x => {
         if (x.length > 0) {
+            x.forEach(el => {
+                el.imagen = BaseUrl + el.imagen;
+
+            });
             res.send({ ok: true, resultado: x });
         } else {
             res.status(500).send({ ok: false, error: "No se encontraron partidos" })

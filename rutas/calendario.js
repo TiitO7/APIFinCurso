@@ -15,6 +15,7 @@ const { base } = require('../models/usuario');
 const basicAuth = require('../utils/basicAuth');
 router.use(express.json());
 
+//VER CALENDARIOS
 router.get('/', (req, res) => {
 
     Calendario.find().populate('convocatorias').then(x => {
@@ -31,6 +32,26 @@ router.get('/', (req, res) => {
     });
 
 });
+
+//VER CALENDARIO ACTIVO 
+router.get('/activo', (req, res) => {
+
+    Calendario.find({ estado: 'true' }).populate('convocatorias').then(x => {
+        if (x.length > 0) {
+            res.send({ ok: true, calendario: x });
+        } else {
+            res.status(500).send({ ok: false, error: "No se encontro el equipo" })
+        }
+    }).catch(err => {
+        res.status(500).send({
+            ok: false,
+            error: err
+        });
+    });
+
+});
+
+
 //VER CALENDARIO
 router.get('/:id', (req, res) => {
     Calendario.findById(req.params['id']).populate('convocatorias')
