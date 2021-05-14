@@ -51,8 +51,19 @@ router.get('/:id', (req, res) => {
 
 });
 
-//VER UN EQUIPO CON SUS USUARIOS
+//Borrar
+router.delete('/:idEquipo', validates.protegerRuta('admin'), (req, res) => {
+    Equipo.findByIdAndRemove(req.params['idEquipo']).then(result => {
+        res.status(200)
+            .send({ ok: true, resultado: result });
+    }).catch(err => {
+        res.status(500).send({
+            ok: false,
+            error: "Error eliminando el equipo: " + err
+        });
+    })
 
+});
 
 //AÑADIR UN EQUIPO
 router.post('/', validates.protegerRuta('admin'), (req, res) => {

@@ -87,19 +87,51 @@ let generarToken = (login, id, role) => {
 
 
 router.post('/login', async(req, res) => {
-    // login/*
-    const usuario = await Usuario.findOne({ email: req.body.email });
+        // login/*
+        const usuario = await Usuario.findOne({ email: req.body.email });
 
-    const passValida = await bcrypt.compare(req.body.password, usuario.password);
-    if (!passValida) return res.status(400).json({ error: 'contraseña no válida' })
+        const passValida = await bcrypt.compare(req.body.password, usuario.password);
+        if (!passValida) return res.status(400).json({ error: 'contraseña no válida' })
 
-    if (usuario && passValida) {
-        res.send({ ok: true, token: generarToken(usuario.email, usuario.id, usuario.role) });
-    } else {
-        res.send({ ok: false });
-    }
+        if (usuario && passValida) {
+            res.send({ ok: true, token: generarToken(usuario.email, usuario.id, usuario.role) });
+        } else {
+            res.send({ ok: false });
+        }
 
-})
+    })
+    //USUARIO CON EQUIPO
+router.get('/usuario', validates.protegerRuta(''), (req, res) => {
+    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/avatar/';
+    console.log(BaseUrl);
+    let token = req.headers['authorization'];
+    token = token.substring(7);
+    console.log(token);
+    let decode = jwt.decode(token, TOKEN_SECRET);
+    console.log(decode);
+
+    Usuario.findById(decode.id).populate('equipo')
+        .then(resultado => {
+            if (resultado) {
+                resultado.avatar = BaseUrl + resultado.avatar;
+                res.status(200)
+                    .send({ ok: true, usuario: resultado, email: resultado.email });
+            } else {
+                res.status(400).send({
+                    ok: false,
+                    error: "Usuario no encontrado"
+                });
+            }
+
+        }).catch(err => {
+            console.log('ha fallado /me');
+            res.status(500).send({
+                ok: false,
+                error: err
+            });
+        });
+
+});
 
 router.get('/me', validates.protegerRuta(''), (req, res) => {
     const BaseUrl = 'http://' + req.headers.host + '/public/uploads/avatar/';
@@ -161,8 +193,10 @@ router.get('/:id', validates.protegerRuta(''), (req, res) => {
 router.get('/equipo/:idEquipo', (req, res) => {
     const BaseUrl = 'http://' + req.headers.host + '/public/uploads/avatar/';
     console.log(BaseUrl);
+    console.log(req.params['idEquipo']);
     Usuario.find({ equipo: req.params['idEquipo'] }).then(x => {
         if (x.length > 0) {
+
             x.forEach(el => {
                 el.avatar = BaseUrl + el.avatar;
 
@@ -172,6 +206,7 @@ router.get('/equipo/:idEquipo', (req, res) => {
             res.status(500).send({ ok: false, error: "No se encontro el equipo" })
         }
     }).catch(err => {
+        console.log(err);
         res.status(500).send({
             ok: false,
             error: err
