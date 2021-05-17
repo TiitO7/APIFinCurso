@@ -62,10 +62,7 @@ router.get('/convocatorias', (req, res) => {
     const BaseUrl = 'http://' + req.headers.host + '/public/uploads/';
     Calendario.findBy({ estado: 'true' }).populate('convocatorias').then(x => {
         if (x.length > 0) {
-            x.forEach(el => {
-                el.imagen = BaseUrl + el.imagen;
 
-            });
             res.send({ ok: true, calendario: x });
         } else {
             res.status(500).send({ ok: false, error: "No se encontro el equipo" })
