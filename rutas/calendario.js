@@ -35,15 +35,10 @@ router.get('/', (req, res) => {
 
 //VER CALENDARIO ACTIVO 
 router.get('/activo', (req, res) => {
-    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/';
+
     Calendario.find({ estado: 'true' }).populate('convocatorias').then(x => {
         if (x.length > 0) {
-
             const calen = x[0];
-            console.log(x);
-            calen.convocatorias.forEach(el => {
-                el.imagen = BaseUrl + el.imagen;
-            });
             res.send({ ok: true, calendario: calen });
         } else {
             res.status(500).send({ ok: false, error: "No se encontro el equipo" })
@@ -59,10 +54,9 @@ router.get('/activo', (req, res) => {
 
 //VER Convocatorias CALENDARIO
 router.get('/convocatorias', (req, res) => {
-    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/';
+
     Calendario.findBy({ estado: 'true' }).populate('convocatorias').then(x => {
         if (x.length > 0) {
-
             res.send({ ok: true, calendario: x });
         } else {
             res.status(500).send({ ok: false, error: "No se encontro el equipo" })
