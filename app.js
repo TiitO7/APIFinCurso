@@ -43,11 +43,11 @@ app.use(methodOverride(function(req, res) {
 }));
 
 app.use('/public', express.static(__dirname + '/public'));
-app.get('/', cors(), convocatorias)
-app.use('/convocatorias', cors(), convocatorias)
-app.use('/auth', cors(), usuarios)
-app.use('/equipos', cors(), equipos)
-app.use('/calendario', cors(), calendario)
+app.get('/', convocatorias)
+app.use('/convocatorias', convocatorias)
+app.use('/auth', usuarios)
+app.use('/equipos', equipos)
+app.use('/calendario', calendario)
 
 
 //app.use(cors());
