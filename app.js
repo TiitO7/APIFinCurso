@@ -17,8 +17,8 @@ let TOKEN_SECRET = 'secreto';
 const app = express();
 
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb' }));
+app.use(express.json({ limit: '1024mb' }));
+app.use(express.urlencoded({ limit: '1024mb' }));
 
 
 

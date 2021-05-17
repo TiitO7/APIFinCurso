@@ -35,10 +35,15 @@ router.get('/', (req, res) => {
 
 //VER CALENDARIO ACTIVO 
 router.get('/activo', (req, res) => {
+    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/';
+
 
     Calendario.find({ estado: 'true' }).populate('convocatorias').then(x => {
         if (x.length > 0) {
             const calen = x[0];
+            calen.convocatorias.forEach(el => {
+                el.imagen = BaseUrl + el.imagen;
+            });
             res.send({ ok: true, calendario: calen });
         } else {
             res.status(500).send({ ok: false, error: "No se encontro el equipo" })
