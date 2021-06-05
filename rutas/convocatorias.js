@@ -100,7 +100,7 @@ router.get('/equipo/:idEquipo', validates.protegerRuta(''), (req, res) => {
 //VER PARTIDOS DE UN EQUIPO
 
 router.get('/equipo/:idEquipo/partidos', validates.protegerRuta(''), (req, res) => {
-    let resultado = [];
+
     const BaseUrl = 'http://' + req.headers.host + '/public/uploads/';
     console.log(BaseUrl);
     Convocatoria.find({ equipo: req.params['idEquipo'], tipo: 'partido' }).then(x => {
@@ -124,9 +124,14 @@ router.get('/equipo/:idEquipo/partidos', validates.protegerRuta(''), (req, res) 
 //VER ENTRENAMIENTOS DE UN EQUIPO
 
 router.get('/equipo/:idEquipo/entrenamientos', validates.protegerRuta(''), (req, res) => {
+    const BaseUrl = 'http://' + req.headers.host + '/public/uploads/';
 
     Convocatoria.find({ equipo: req.params['idEquipo'], tipo: 'entrenamiento' }).then(x => {
         if (x.length > 0) {
+            x.forEach(el => {
+                el.imagen = BaseUrl + el.imagen;
+
+            });
             res.send({ ok: true, resultado: x });
         } else {
             res.status(500).send({ ok: false, error: "No se encontraron partidos" })
